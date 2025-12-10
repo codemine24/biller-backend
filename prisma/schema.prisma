@@ -26,6 +26,7 @@ model User {
   email               String?    @unique
   contact_number      String     @unique
   password            String
+  avatar              String?
   role                UserRole
   status              UserStatus @default(ACTIVE)
   is_deleted          Boolean    @default(false)

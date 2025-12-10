@@ -20,4 +20,6 @@ export default {
   jwt_access_expiresin: process.env.JWT_ACCESS_EXPIRESIN as string,
   jwt_refresh_secret: process.env.JWT_REFRESH_SECRET as string,
   jwt_refresh_expiresin: process.env.JWT_REFRESH_EXPIRESIN as string,
+  email_address: process.env.EMAIL_ADDRESS as string,
+  email_app_pass: process.env.EMAIL_APP_PASS as string,
 };
