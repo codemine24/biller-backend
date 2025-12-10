@@ -122,15 +122,18 @@ const getAccessToken = async (token: string) => {
     throw new CustomizedError(httpStatus.NOT_FOUND, "User not found");
   }
 
-  const passwordChangedTime = Math.floor(
-    new Date(user.password_changed_at).getTime() / 1000
-  );
-
-  if (passwordChangedTime > verifiedUser.iat) {
-    throw new CustomizedError(
-      httpStatus.UNAUTHORIZED,
-      "You are not authorized"
+  // Check if password was changed after token was issued
+  if (user.password_changed_at) {
+    const passwordChangedTime = Math.floor(
+      new Date(user.password_changed_at).getTime() / 1000
     );
+
+    if (passwordChangedTime > verifiedUser.iat) {
+      throw new CustomizedError(
+        httpStatus.UNAUTHORIZED,
+        "You are not authorized"
+      );
+    }
   }
 
   const jwtPayload = {
