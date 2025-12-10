@@ -1,6 +1,6 @@
 generator client {
   provider = "prisma-client"
-  output   = "../generated/prisma"
+  output   = "./generated"
 }
 
 datasource db {
@@ -20,17 +20,19 @@ model Subscriber {
 }
 
 model User {
-  id             String     @id @default(uuid())
-  first_name     String
-  last_name      String?
-  email          String?    @unique
-  contact_number String     @unique
-  password       String
-  role           UserRole
-  status         UserStatus
-  subscriber_id  String?
-  created_at     DateTime   @default(now())
-  updated_at     DateTime   @updatedAt
+  id                  String     @id @default(uuid())
+  first_name          String
+  last_name           String?
+  email               String?    @unique
+  contact_number      String     @unique
+  password            String
+  role                UserRole
+  status              UserStatus @default(ACTIVE)
+  is_deleted          Boolean    @default(false)
+  password_changed_at DateTime?
+  subscriber_id       String?
+  created_at          DateTime   @default(now())
+  updated_at          DateTime   @updatedAt
 
   subscriber Subscriber? @relation(fields: [subscriber_id], references: [id])
 
