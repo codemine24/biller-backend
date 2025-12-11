@@ -1,7 +1,8 @@
-import { UserRole } from "./../../../prisma/generated/enums";
+
 import bcrypt from "bcrypt";
 import { prisma } from "../shared/prisma";
 import config from "../config";
+import { UserRole } from "../../../prisma/generated";
 
 const owner = {
   first_name: config.owner_first_name,

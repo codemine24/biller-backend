@@ -3,14 +3,13 @@ import httpStatus from "http-status";
 import { TAuthUser } from "../../interfaces/common";
 import { newPasswordTemplate } from "../../template/new-password-template";
 import sendEmail from "../../utils/email-sender";
-import { userSelectedFields } from "../User/User.constants";
 import { ResetPasswordPayload, TLogin, TRegister } from "./Auth.interfaces";
 import { prisma } from "../../shared/prisma";
 import { tokenGenerator, tokenVerifier } from "../../utils/jwt-helpers";
 import { passwordGenerator } from "../../utils/password-generator";
 import CustomizedError from "../../error/customized-error";
-import { UserStatus } from "../../../../prisma/generated/enums";
 import config from "../../config";
+import { UserStatus } from "../../../../prisma/generated";
 
 // -------------------------------------- REGISTER ------------------------------------------
 const register = async (data: TRegister) => {
@@ -24,7 +23,6 @@ const register = async (data: TRegister) => {
       ...data,
       password: hashedPassword,
     },
-    select: userSelectedFields,
   });
 
   return result;
@@ -204,9 +202,6 @@ const resetPassword = async (
     data: {
       password: hashedPassword,
       password_changed_at: new Date(),
-    },
-    select: {
-      ...userSelectedFields,
     },
   });
 

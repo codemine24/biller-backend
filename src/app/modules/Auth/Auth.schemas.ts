@@ -3,7 +3,7 @@ import {
   contactNumberExample,
   contactNumberRegex,
 } from "../../constants/common";
-import { UserRole } from "../../../../prisma/generated/enums";
+import { UserRole } from "../../../../prisma/generated";
 
 // -------------------------------------- REGISTER ------------------------------------------
 const register = z.object({
