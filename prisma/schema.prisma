@@ -15,7 +15,7 @@ model Company {
   email          String?
   contact_number String        @unique
   address        String
-  status         CompanyStatus @default(HOLD)
+  status         CompanyStatus @default(ACTIVE)
   created_at     DateTime      @default(now())
   updated_at     DateTime      @updatedAt
 
@@ -125,7 +125,7 @@ model Product {
 model Store {
   id             String   @id @default(uuid())
   name           String
-  location       String
+  address        String
   contact_number String?
   company_id     String
   is_active      Boolean  @default(true)

@@ -14,14 +14,37 @@ import queryValidator from "../../utils/query-validator";
 import paginationMaker from "../../utils/pagination-maker";
 import { prisma } from "../../shared/prisma";
 import { Prisma } from "../../../../prisma/generated";
+import { TAuthUser } from "../../interfaces/common";
 
 // -------------------------------------- CREATE COMPANY -----------------------------------------
-const createCompany = async (data: CreateCompanyPayload) => {
-  const company = await prisma.company.create({
-    data,
+const createCompany = async (data: CreateCompanyPayload, user: TAuthUser) => {
+  const result = await prisma.$transaction(async (tx) => {
+    const company = await tx.company.create({
+      data,
+    });
+
+    await tx.store.create({
+      data: {
+        name: data.name,
+        contact_number: data.contact_number,
+        address: data.address,
+        company_id: company.id,
+      },
+    });
+
+    await tx.user.update({
+      where: {
+        id: user.id,
+      },
+      data: {
+        company_id: company.id,
+      },
+    })
+
+    return company;
   });
 
-  return company;
+  return result;
 };
 
 // -------------------------------------- GET COMPANIES -------------------------------------------

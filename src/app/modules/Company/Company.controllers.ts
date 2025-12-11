@@ -10,11 +10,11 @@ import { TAuthUser } from "../../interfaces/common";
 // -------------------------------------- CREATE COMPANY -------------------------------------
 const createCompany = catchAsync(
   async (req: Request & { user?: TAuthUser }, res, next) => {
-    const result = await CompanyServices.createCompany(req.body);
+    const result = await CompanyServices.createCompany(req.body, req.user as TAuthUser);
     sendResponse(res, {
       statusCode: httpStatus.CREATED,
       success: true,
-      message: "Your request has been successfully submitted",
+      message: "Company created successfully",
       data: result,
     });
   }

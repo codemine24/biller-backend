@@ -15,7 +15,7 @@ const routes = [
     route: CustomerRoutes,
   },
   {
-    path: "/companies",
+    path: "/company",
     route: CompanyRoutes,
   },
 ];

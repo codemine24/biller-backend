@@ -8,7 +8,8 @@ import { UserRole } from "../../../../prisma/generated";
 const router = Router();
 
 router.post(
-  "/subscribe",
+  "/",
+  auth(UserRole.OWNER, UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.BRANCH_MANAGER, UserRole.SALESMAN),
   payloadValidator(CompanySchemas.createCompany),
   CompanyControllers.createCompany
 );
