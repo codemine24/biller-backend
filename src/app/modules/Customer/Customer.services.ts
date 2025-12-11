@@ -13,20 +13,24 @@ import { validDateChecker } from "../../utils/checker";
 import queryValidator from "../../utils/query-validator";
 import paginationMaker from "../../utils/pagination-maker";
 import { prisma } from "../../shared/prisma";
-import { Prisma } from "../../../../prisma/generated";
+import { CompanyStatus, Prisma } from "../../../../prisma/generated";
 
 // -------------------------------------- CREATE CUSTOMER -----------------------------------
-const createCustomer = async (data: CreateCustomerPayload) => {
-  // Check if subscriber exists
-  await prisma.subscriber.findUniqueOrThrow({
-    where: { id: data.subscriber_id },
+const createCustomer = async (data: CreateCustomerPayload, user: TAuthUser) => {
+  console.log(user);
+  if (!user?.company_id) {
+    throw new CustomizedError(httpStatus.NOT_FOUND, "Your company not found");
+  }
+  // Check if company exists
+  const company =await prisma.company.findUniqueOrThrow({
+    where: { id: user.company_id, status: CompanyStatus.ACTIVE },
   });
 
-  // Check for duplicate contact number within the same subscriber
+  // Check for duplicate contact number within the same company
   const existingCustomer = await prisma.customer.findFirst({
     where: {
       contact_number: data.contact_number,
-      subscriber_id: data.subscriber_id,
+      company_id: company.id,
     },
   });
 
@@ -39,7 +43,10 @@ const createCustomer = async (data: CreateCustomerPayload) => {
 
   // Create customer
   const customer = await prisma.customer.create({
-    data: data,
+    data: {
+      ...data,
+      company_id: company.id,
+    },
   });
 
   return customer;
@@ -47,6 +54,10 @@ const createCustomer = async (data: CreateCustomerPayload) => {
 
 // -------------------------------------- GET CUSTOMERS -------------------------------------
 const getCustomers = async (user: TAuthUser, query: Record<string, any>) => {
+  if (!user?.company_id) {
+    throw new CustomizedError(httpStatus.NOT_FOUND, "Your company not found");
+  }
+  
   const {
     search_term,
     page,
@@ -70,9 +81,7 @@ const getCustomers = async (user: TAuthUser, query: Record<string, any>) => {
       sort_order,
     });
 
-  const andConditions: Prisma.CustomerWhereInput[] = [
-    { subscriber_id: user.subscriber_id },
-  ];
+  const andConditions: Prisma.CustomerWhereInput[] = [{company_id: user.company_id}];
 
   if (search_term) {
     andConditions.push({
@@ -150,11 +159,11 @@ const getCustomers = async (user: TAuthUser, query: Record<string, any>) => {
 };
 
 // -------------------------------------- GET CUSTOMER (SINGLE) -----------------------------
-const getCustomer = async (id: string, subscriber_id: string) => {
+const getCustomer = async (id: string, company_id: string) => {
   const result = await prisma.customer.findFirst({
     where: {
       id,
-      subscriber_id,
+      company_id,
       is_active: true,
     },
   });
@@ -169,14 +178,14 @@ const getCustomer = async (id: string, subscriber_id: string) => {
 // -------------------------------------- UPDATE CUSTOMER -----------------------------------
 const updateCustomer = async (
   id: string,
-  subscriber_id: string,
+  company_id: string,
   payload: UpdateCustomerPayload
 ) => {
   // Check if customer exists and belongs to subscriber
   const existingCustomer = await prisma.customer.findFirst({
     where: {
       id,
-      subscriber_id,
+      company_id,
     },
   });
 
@@ -189,7 +198,7 @@ const updateCustomer = async (
     const duplicateCustomer = await prisma.customer.findFirst({
       where: {
         contact_number: payload.contact_number,
-        subscriber_id,
+        company_id,
         id: { not: id },
       },
     });
@@ -214,12 +223,12 @@ const updateCustomer = async (
 };
 
 // -------------------------------------- DELETE CUSTOMER -----------------------------------
-const deleteCustomer = async (id: string, subscriber_id: string) => {
+const deleteCustomer = async (id: string, company_id: string) => {
   // Check if customer exists and belongs to subscriber
   const existingCustomer = await prisma.customer.findFirst({
     where: {
       id,
-      subscriber_id,
+      company_id,
     },
     include: {
       sales: true,

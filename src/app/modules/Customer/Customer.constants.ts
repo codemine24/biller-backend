@@ -19,10 +19,8 @@ export const customerSearchableFields = [
 ];
 
 export const customerSortableFields = [
-  "id",
   "name",
   "email",
-  "contact_number",
   "total_due",
   "created_at",
   "updated_at",

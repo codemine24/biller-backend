@@ -361,7 +361,7 @@ model TransferItem {
   @@map("transfer_items")
 }
 
-// ==================== Customer & Vendor Management =====================
+// ==================== Customer & Vendor Management ======================
 
 model Customer {
   id             String   @id @default(uuid())

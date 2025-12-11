@@ -66,6 +66,7 @@ const login = async (credential: TLogin) => {
     contact_number: user.contact_number,
     email: user.email,
     role: user.role,
+    company_id: user.company_id,
   };
 
   const accessToken = tokenGenerator(
@@ -139,6 +140,7 @@ const getAccessToken = async (token: string) => {
     contact_number: user.contact_number,
     email: user.email,
     role: user.role,
+    company_id: user.company_id,
   };
 
   const accessToken = tokenGenerator(
@@ -215,6 +217,7 @@ const resetPassword = async (
     contact_number: result.contact_number,
     email: result.email,
     role: result.role,
+    company_id: result.company_id,
   };
 
   const accessToken = tokenGenerator(

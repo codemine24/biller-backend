@@ -17,7 +17,6 @@ const createCustomer = z.object({
         message: `Contact number should be a valid Bangladeshi number like ${contactNumberExample}`,
       }),
       address: z.string().optional(),
-      subscriber_id: z.uuid({ message: "Subscriber ID must be a valid UUID" }),
     })
     .strict(),
 });

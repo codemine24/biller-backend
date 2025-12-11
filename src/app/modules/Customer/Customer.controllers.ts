@@ -10,7 +10,7 @@ import { TAuthUser } from "../../interfaces/common";
 // -------------------------------------- CREATE CUSTOMER -----------------------------------
 const createCustomer = catchAsync(
   async (req: Request & { user?: TAuthUser }, res, next) => {
-    const result = await CustomerServices.createCustomer(req.body);
+    const result = await CustomerServices.createCustomer(req.body, req.user as TAuthUser);
     sendResponse(res, {
       statusCode: httpStatus.CREATED,
       success: true,
@@ -43,7 +43,7 @@ const getCustomer = catchAsync(
   async (req: Request & { user?: TAuthUser }, res, next) => {
     const result = await CustomerServices.getCustomer(
       req.params.id,
-      req.user?.subscriber_id as string
+      req.user?.company_id as string
     );
     sendResponse(res, {
       statusCode: httpStatus.OK,
@@ -59,7 +59,7 @@ const updateCustomer = catchAsync(
   async (req: Request & { user?: TAuthUser }, res, next) => {
     const result = await CustomerServices.updateCustomer(
       req.params.id,
-      req.user?.subscriber_id as string,
+      req.user?.company_id as string,
       req.body
     );
     sendResponse(res, {
@@ -76,7 +76,7 @@ const deleteCustomer = catchAsync(
   async (req: Request & { user?: TAuthUser }, res, next) => {
     const result = await CustomerServices.deleteCustomer(
       req.params.id,
-      req.user?.subscriber_id as string
+      req.user?.company_id as string
     );
     sendResponse(res, {
       statusCode: httpStatus.OK,
