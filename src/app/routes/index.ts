@@ -3,6 +3,8 @@ import { AuthRoutes } from "../modules/Auth/Auth.routes";
 import { CustomerRoutes } from "../modules/Customer/Customer.routes";
 import { CompanyRoutes } from "../modules/Company/Company.routes";
 import { VendorRoutes } from "../modules/Vendor/Vendor.routes";
+import { ProductRoutes } from "../modules/Product/Product.routes";
+import { BrandRoutes } from "../modules/Brand/Brand.routes";
 
 const router = Router();
 
@@ -22,6 +24,14 @@ const routes = [
   {
     path: "/vendor",
     route: VendorRoutes,
+  },
+  {
+    path: "/product",
+    route: ProductRoutes,
+  },
+  {
+    path: "/brand",
+    route: BrandRoutes,
   },
 ];
 

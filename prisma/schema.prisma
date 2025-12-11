@@ -65,11 +65,11 @@ model Category {
   slug        String   @unique
   icon        String?
   description String?
-  company_id  String
+  company_id  String?
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
 
-  company  Company   @relation(fields: [company_id], references: [id], onDelete: Cascade)
+  company  Company?  @relation(fields: [company_id], references: [id], onDelete: Cascade)
   products Product[]
 
   @@map("categories")
@@ -81,11 +81,11 @@ model Brand {
   slug        String   @unique
   logo        String?
   description String?
-  company_id  String
+  company_id  String?
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
 
-  company  Company   @relation(fields: [company_id], references: [id], onDelete: Cascade)
+  company  Company?  @relation(fields: [company_id], references: [id], onDelete: Cascade)
   products Product[]
 
   @@map("brands")
