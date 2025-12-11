@@ -5,7 +5,7 @@ import config from "../config";
 import { UserRole } from "../../../prisma/generated";
 
 const owner = {
-  first_name: config.owner_first_name,
+  name: config.owner_name,
   email: config.owner_email,
   contact_number: config.owner_contact_number,
   role: UserRole.OWNER,

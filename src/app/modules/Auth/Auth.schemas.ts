@@ -3,22 +3,15 @@ import {
   contactNumberExample,
   contactNumberRegex,
 } from "../../constants/common";
-import { UserRole } from "../../../../prisma/generated";
 
 // -------------------------------------- REGISTER ------------------------------------------
 const register = z.object({
   body: z.object({
-    first_name: z
+    name: z
       .string({
-        error: "First name should be a text",
+        error: "Name should be a text",
       })
-      .min(1, "First name is required"),
-    last_name: z
-      .string({
-        error: "Last name should be a text",
-      })
-      .optional()
-      .nullable(),
+      .min(1, "Name is required"),
     email: z.email({ message: "Email is invalid" }).optional(),
     contact_number: z
       .string({ error: "Contact number should be a text" })
@@ -31,12 +24,7 @@ const register = z.object({
       .regex(/^(?=.*[a-zA-Z])(?=.*\d)/, {
         message: "Password must contain at least one letter and one number",
       }),
-    role: z.enum(Object.values(UserRole), {
-      error: `User role should be one of ${Object.values(UserRole).join(
-        " | "
-      )}`,
-    }),
-  }),
+  }).strict(),
 });
 
 // -------------------------------------- LOGIN ---------------------------------------------

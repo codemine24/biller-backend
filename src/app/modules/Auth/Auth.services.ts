@@ -61,8 +61,7 @@ const login = async (credential: TLogin) => {
 
   const jwtPayload = {
     id: user.id,
-    first_name: user.first_name,
-    last_name: user.last_name,
+    name: user.name,
     avatar: user.avatar,
     contact_number: user.contact_number,
     email: user.email,
@@ -83,8 +82,7 @@ const login = async (credential: TLogin) => {
 
   return {
     id: user.id,
-    first_name: user.first_name,
-    last_name: user.last_name,
+    name: user.name,
     email: user.email,
     contact_number: user.contact_number,
     role: user.role,
@@ -136,8 +134,7 @@ const getAccessToken = async (token: string) => {
 
   const jwtPayload = {
     id: user.id,
-    first_name: user.first_name,
-    last_name: user.last_name,
+    name: user.name,
     avatar: user.avatar,
     contact_number: user.contact_number,
     email: user.email,
@@ -152,8 +149,7 @@ const getAccessToken = async (token: string) => {
 
   return {
     id: user.id,
-    first_name: user.first_name,
-    last_name: user.last_name,
+    name: user.name,
     email: user.email,
     contact_number: user.contact_number,
     role: user.role,
@@ -214,8 +210,7 @@ const resetPassword = async (
 
   const jwtPayload = {
     id: result.id,
-    first_name: result.first_name,
-    last_name: result.last_name,
+    name: result.name,
     avatar: result.avatar,
     contact_number: result.contact_number,
     email: result.email,
@@ -274,10 +269,6 @@ const forgotPassword = async (email_or_contact_number: string) => {
   if (user.email) {
     emailResponse = await sendEmail(user.email, emailBody, "New password");
   }
-
-  const SMSBody = `Dear ${
-    user.first_name || "customer"
-  }, your new password is: ${generatedPassword} \nTECHTONG`;
 
   if (emailResponse?.accepted?.length === 0)
     throw new CustomizedError(

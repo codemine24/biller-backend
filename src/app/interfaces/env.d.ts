@@ -5,7 +5,7 @@ declare namespace NodeJS {
     DATABASE_URL: string;
     SUPABASE_BUCKET_URL: string;
     SUPABASE_BUCKET_KEY: string;
-    OWNER_FIRST_NAME: string;
+    OWNER_NAME: string;
     OWNER_EMAIL: string;
     OWNER_DEFAULT_PASS: string;
     OWNER_CONTACT_NUMBER: string;

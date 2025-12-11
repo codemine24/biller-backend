@@ -9,7 +9,6 @@ const router = Router();
 
 router.post(
   "/register",
-  auth(UserRole.OWNER, UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.BRANCH_MANAGER, UserRole.SALESMAN),
   payloadValidator(AuthSchemas.register),
   AuthControllers.register
 );
