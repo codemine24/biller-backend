@@ -140,6 +140,28 @@ const createPurchase = async (data: CreatePurchasePayload, user: TAuthUser) => {
       })),
     });
 
+    // Update inventory for each purchased product
+    for (const item of itemsWithTotal) {
+      await tx.inventory.upsert({
+        where: {
+          product_id_store_id: {
+            product_id: item.product_id,
+            store_id: data.store_id,
+          },
+        },
+        update: {
+          quantity: {
+            increment: item.quantity,
+          },
+        },
+        create: {
+          product_id: item.product_id,
+          store_id: data.store_id,
+          quantity: item.quantity,
+        },
+      });
+    }
+
     return newPurchase;
   });
 
