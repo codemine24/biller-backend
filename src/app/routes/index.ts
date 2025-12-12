@@ -11,6 +11,7 @@ import { PurchaseRoutes } from "../modules/Purchase/Purchase.routes";
 import { SaleRoutes } from "../modules/Sale/Sale.routes";
 import { TransferRoutes } from "../modules/Transfer/Transfer.routes";
 import { SaleReturnRoutes } from "../modules/SaleReturn/SaleReturn.routes";
+import { PurchaseReturnRoutes } from "../modules/PurchaseReturn/PurchaseReturn.routes";
 
 const router = Router();
 
@@ -62,6 +63,10 @@ const routes = [
   {
     path: "/sale-return",
     route: SaleReturnRoutes,
+  },
+  {
+    path: "/purchase-return",
+    route: PurchaseReturnRoutes,
   },
 ];
 
