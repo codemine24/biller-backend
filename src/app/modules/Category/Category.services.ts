@@ -1,14 +1,14 @@
 import {
-  brandQueryValidationConfig,
-  brandSearchableFields,
-} from "./Brand.constants";
+  categoryQueryValidationConfig,
+  categorySearchableFields,
+} from "./Category.constants";
 import { TAuthUser } from "../../interfaces/common";
 import CustomizedError from "../../error/customized-error";
 import httpStatus from "http-status";
 import {
-  CreateBrandPayload,
-  UpdateBrandPayload,
-} from "./Brand.interfaces";
+  CreateCategoryPayload,
+  UpdateCategoryPayload,
+} from "./Category.interfaces";
 import { validDateChecker } from "../../utils/checker";
 import queryValidator from "../../utils/query-validator";
 import paginationMaker from "../../utils/pagination-maker";
@@ -16,8 +16,8 @@ import { prisma } from "../../shared/prisma";
 import { Prisma, UserRole } from "../../../../prisma/generated";
 import { slugGenerator } from "../../utils/slug-generator";
 
-// -------------------------------------- CREATE BRAND -----------------------------------
-const createBrand = async (data: CreateBrandPayload, user: TAuthUser) => {
+// -------------------------------------- CREATE CATEGORY -----------------------------------
+const createCategory = async (data: CreateCategoryPayload, user: TAuthUser) => {
   if (user.role !== UserRole.SUPER_ADMIN && !user?.company_id) {
     throw new CustomizedError(httpStatus.NOT_FOUND, "Your company not found");
   }
@@ -26,37 +26,37 @@ const createBrand = async (data: CreateBrandPayload, user: TAuthUser) => {
   const slug = data.slug || slugGenerator(data.name);
 
   // Check for duplicate name
-  const existingBrandByName = await prisma.brand.findFirst({
+  const existingCategoryByName = await prisma.category.findFirst({
     where: {
       name: data.name,
       ...(user.company_id && {company_id: user.company_id})
     },
   });
 
-  if (existingBrandByName) {
+  if (existingCategoryByName) {
     throw new CustomizedError(
       httpStatus.CONFLICT,
-      "Brand with this name already exists"
+      "Category with this name already exists"
     );
   }
 
   // Check for duplicate slug
-  const existingBrandBySlug = await prisma.brand.findFirst({
+  const existingCategoryBySlug = await prisma.category.findFirst({
     where: {
       slug: slug,
       ...(user.company_id && {company_id: user.company_id})
     },
   });
 
-  if (existingBrandBySlug) {
+  if (existingCategoryBySlug) {
     throw new CustomizedError(
       httpStatus.CONFLICT,
-      "Brand with this slug already exists"
+      "Category with this slug already exists"
     );
   }
 
-  // Create brand
-  const brand = await prisma.brand.create({
+  // Create category
+  const category = await prisma.category.create({
     data: {
       ...data,
       slug,
@@ -64,11 +64,11 @@ const createBrand = async (data: CreateBrandPayload, user: TAuthUser) => {
     },
   });
 
-  return brand;
+  return category;
 };
 
-// -------------------------------------- GET BRANDS -------------------------------------
-const getBrands = async (user: TAuthUser, query: Record<string, any>) => {
+// -------------------------------------- GET CATEGORIES -------------------------------------
+const getCategories = async (user: TAuthUser, query: Record<string, any>) => {
   if (user.role !== UserRole.SUPER_ADMIN && !user?.company_id) {
     throw new CustomizedError(httpStatus.NOT_FOUND, "Your company not found");
   }
@@ -84,9 +84,9 @@ const getBrands = async (user: TAuthUser, query: Record<string, any>) => {
     ...remainingQuery
   } = query;
 
-  if (sort_by) queryValidator(brandQueryValidationConfig, "sort_by", sort_by);
+  if (sort_by) queryValidator(categoryQueryValidationConfig, "sort_by", sort_by);
   if (sort_order)
-    queryValidator(brandQueryValidationConfig, "sort_order", sort_order);
+    queryValidator(categoryQueryValidationConfig, "sort_order", sort_order);
 
   const { pageNumber, limitNumber, skip, sortWith, sortSequence } =
     paginationMaker({
@@ -96,11 +96,11 @@ const getBrands = async (user: TAuthUser, query: Record<string, any>) => {
       sort_order,
     });
 
-  const andConditions: Prisma.BrandWhereInput[] = user.company_id ? [{company_id: user.company_id}] : [];
+  const andConditions: Prisma.CategoryWhereInput[] = user.company_id ? [{company_id: user.company_id}] : [];
 
   if (search_term) {
     andConditions.push({
-      OR: brandSearchableFields.map((field) => {
+      OR: categorySearchableFields.map((field) => {
         return {
           [field]: {
             contains: search_term.trim(),
@@ -131,7 +131,7 @@ const getBrands = async (user: TAuthUser, query: Record<string, any>) => {
 
   if (Object.keys(remainingQuery).length) {
     for (const [key, value] of Object.entries(remainingQuery)) {
-      queryValidator(brandQueryValidationConfig, key, value);
+      queryValidator(categoryQueryValidationConfig, key, value);
       andConditions.push({
         [key]: value.includes(",") ? { in: value.split(",") } : value,
       });
@@ -143,7 +143,7 @@ const getBrands = async (user: TAuthUser, query: Record<string, any>) => {
   } : {};
 
   const [result, total] = await Promise.all([
-    prisma.brand.findMany({
+    prisma.category.findMany({
       where: whereConditions,
       skip: skip,
       take: limitNumber,
@@ -151,7 +151,7 @@ const getBrands = async (user: TAuthUser, query: Record<string, any>) => {
         [sortWith]: sortSequence,
       },
     }),
-    prisma.brand.count({
+    prisma.category.count({
       where: whereConditions,
     }),
   ]);
@@ -166,9 +166,9 @@ const getBrands = async (user: TAuthUser, query: Record<string, any>) => {
   };
 };
 
-// -------------------------------------- GET BRAND (SINGLE) -----------------------------
-const getBrand = async (id: string, company_id: string | null) => {
-  const result = await prisma.brand.findFirst({
+// -------------------------------------- GET CATEGORY (SINGLE) -----------------------------
+const getCategory = async (id: string, company_id: string | null) => {
+  const result = await prisma.category.findFirst({
     where: {
       id,
       ...(company_id && {company_id})
@@ -176,38 +176,38 @@ const getBrand = async (id: string, company_id: string | null) => {
   });
 
   if (!result) {
-    throw new CustomizedError(httpStatus.NOT_FOUND, "Brand not found");
+    throw new CustomizedError(httpStatus.NOT_FOUND, "Category not found");
   }
 
   return result;
 };
 
-// -------------------------------------- UPDATE BRAND -----------------------------------
-const updateBrand = async (
+// -------------------------------------- UPDATE CATEGORY -----------------------------------
+const updateCategory = async (
   id: string,
   company_id: string | null,
-  payload: UpdateBrandPayload
+  payload: UpdateCategoryPayload
 ) => {
-  // Check if brand exists and belongs to company
-  const existingBrand = await prisma.brand.findFirst({
+  // Check if category exists and belongs to company
+  const existingCategory = await prisma.category.findFirst({
     where: {
       id,
       ...(company_id && {company_id})
     },
   });
 
-  if (!existingBrand) {
-    throw new CustomizedError(httpStatus.NOT_FOUND, "Brand not found");
+  if (!existingCategory) {
+    throw new CustomizedError(httpStatus.NOT_FOUND, "Category not found");
   }
 
   // Auto-generate slug if name is being updated but slug is not provided
-  if (payload.name && !payload.slug && payload.name !== existingBrand.name) {
+  if (payload.name && !payload.slug && payload.name !== existingCategory.name) {
     payload.slug = slugGenerator(payload.name);
   }
 
   // Check for duplicate name if updating name
-  if (payload.name && payload.name !== existingBrand.name) {
-    const duplicateBrand = await prisma.brand.findFirst({
+  if (payload.name && payload.name !== existingCategory.name) {
+    const duplicateCategory = await prisma.category.findFirst({
       where: {
         name: payload.name,
         ...(company_id && {company_id}),
@@ -215,17 +215,17 @@ const updateBrand = async (
       },
     });
 
-    if (duplicateBrand) {
+    if (duplicateCategory) {
       throw new CustomizedError(
         httpStatus.CONFLICT,
-        "Brand with this name already exists"
+        "Category with this name already exists"
       );
     }
   }
 
   // Check for duplicate slug if updating slug
-  if (payload.slug && payload.slug !== existingBrand.slug) {
-    const duplicateBrand = await prisma.brand.findFirst({
+  if (payload.slug && payload.slug !== existingCategory.slug) {
+    const duplicateCategory = await prisma.category.findFirst({
       where: {
         slug: payload.slug,
         ...(company_id && {company_id}),
@@ -233,16 +233,16 @@ const updateBrand = async (
       },
     });
 
-    if (duplicateBrand) {
+    if (duplicateCategory) {
       throw new CustomizedError(
         httpStatus.CONFLICT,
-        "Brand with this slug already exists"
+        "Category with this slug already exists"
       );
     }
   }
 
-  // Update brand
-  const result = await prisma.brand.update({
+  // Update category
+  const result = await prisma.category.update({
     where: {
       id,
     },
@@ -252,10 +252,10 @@ const updateBrand = async (
   return result;
 };
 
-// -------------------------------------- DELETE BRAND -----------------------------------
-const deleteBrand = async (id: string, company_id: string | null) => {
-  // Check if brand exists and belongs to company
-  const existingBrand = await prisma.brand.findFirst({
+// -------------------------------------- DELETE CATEGORY -----------------------------------
+const deleteCategory = async (id: string, company_id: string | null) => {
+  // Check if category exists and belongs to company
+  const existingCategory = await prisma.category.findFirst({
     where: {
       id,
       ...(company_id && {company_id})
@@ -265,32 +265,32 @@ const deleteBrand = async (id: string, company_id: string | null) => {
     },
   });
 
-  if (!existingBrand) {
-    throw new CustomizedError(httpStatus.NOT_FOUND, "Brand not found");
+  if (!existingCategory) {
+    throw new CustomizedError(httpStatus.NOT_FOUND, "Category not found");
   }
 
-  // Check if brand has associated products
-  if (existingBrand.products.length > 0) {
+  // Check if category has associated products
+  if (existingCategory.products.length > 0) {
     throw new CustomizedError(
       httpStatus.BAD_REQUEST,
-      "Cannot delete brand with existing products"
+      "Cannot delete category with existing products"
     );
   }
 
-  // Delete brand
-  await prisma.brand.delete({
+  // Delete category
+  await prisma.category.delete({
     where: {
       id,
     },
   });
 
-  return { message: "Brand deleted successfully" };
+  return { message: "Category deleted successfully" };
 };
 
-export const BrandServices = {
-  createBrand,
-  getBrands,
-  getBrand,
-  updateBrand,
-  deleteBrand,
+export const CategoryServices = {
+  createCategory,
+  getCategories,
+  getCategory,
+  updateCategory,
+  deleteCategory,
 };

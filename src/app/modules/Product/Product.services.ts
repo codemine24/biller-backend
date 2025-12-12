@@ -14,17 +14,7 @@ import queryValidator from "../../utils/query-validator";
 import paginationMaker from "../../utils/pagination-maker";
 import { prisma } from "../../shared/prisma";
 import { CompanyStatus, Prisma, UserRole } from "../../../../prisma/generated";
-
-// Helper function to generate slug from name
-const generateSlug = (name: string): string => {
-  return name
-    .toLowerCase()
-    .trim()
-    .replace(/[^\w\s-]/g, '') // Remove special characters
-    .replace(/\s+/g, '-') // Replace spaces with hyphens
-    .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
-    .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
-};
+import { slugGenerator } from "../../utils/slug-generator";
 
 // -------------------------------------- CREATE PRODUCT -----------------------------------
 const createProduct = async (data: CreateProductPayload, user: TAuthUser) => {
@@ -33,7 +23,7 @@ const createProduct = async (data: CreateProductPayload, user: TAuthUser) => {
   }
 
   // Generate slug from name if not provided
-  const slug = data.slug || generateSlug(data.name);
+  const slug = data.slug || slugGenerator(data.name);
 
   // Check for duplicate name within the same company
   const existingProductByName = await prisma.product.findFirst({
@@ -245,7 +235,7 @@ const updateProduct = async (
 
   // Auto-generate slug if name is being updated but slug is not provided
   if (payload.name && !payload.slug && payload.name !== existingProduct.name) {
-    payload.slug = generateSlug(payload.name);
+    payload.slug = slugGenerator(payload.name);
   }
 
   // Check for duplicate name if updating name

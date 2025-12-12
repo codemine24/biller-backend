@@ -5,6 +5,7 @@ import { CompanyRoutes } from "../modules/Company/Company.routes";
 import { VendorRoutes } from "../modules/Vendor/Vendor.routes";
 import { ProductRoutes } from "../modules/Product/Product.routes";
 import { BrandRoutes } from "../modules/Brand/Brand.routes";
+import { CategoryRoutes } from "../modules/Category/Category.routes";
 
 const router = Router();
 
@@ -32,6 +33,10 @@ const routes = [
   {
     path: "/brand",
     route: BrandRoutes,
+  },
+  {
+    path: "/category",
+    route: CategoryRoutes,
   },
 ];
 
