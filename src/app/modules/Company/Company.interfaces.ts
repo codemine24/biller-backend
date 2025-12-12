@@ -1,7 +1,7 @@
 import z from "zod";
 import { CompanySchemas } from "./Company.schemas";
 
-export type CreateCompanyPayload = z.infer<typeof CompanySchemas.subscribe>['body'];
+export type CreateCompanyPayload = z.infer<typeof CompanySchemas.createCompany>['body'];
 
 export type UpdateCompanyBySuperAdminPayload = z.infer<typeof CompanySchemas.updateCompanyBySuperAdmin>['body'];
 

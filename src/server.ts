@@ -1,9 +1,9 @@
-import { seedOwner } from "./app/db/index";
 import http from "http";
 import cron from "node-cron";
 import app from "./app";
 import clearOldOTPs from "./app/utils/clear-old-otps";
 import config from "./app/config";
+import { seedSuperAdmin } from "./app/db";
 
 const port = config.port || 9000;
 
@@ -11,7 +11,7 @@ const server = http.createServer(app);
 
 async function main() {
   try {
-    await seedOwner();
+    await seedSuperAdmin();
 
     // start server
     server.listen(port, () => {

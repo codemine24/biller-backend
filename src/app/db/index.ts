@@ -4,30 +4,30 @@ import { prisma } from "../shared/prisma";
 import config from "../config";
 import { UserRole } from "../../../prisma/generated";
 
-const owner = {
-  name: config.owner_name,
-  email: config.owner_email,
-  contact_number: config.owner_contact_number,
-  role: UserRole.OWNER,
+const superAdmin = {
+  name: config.super_admin_name,
+  email: config.super_admin_email,
+  contact_number: config.super_admin_contact_number,
+  role: UserRole.SUPER_ADMIN,
 };
 
-export const seedOwner = async () => {
-  const isExistOwner = await prisma.user.findFirst({
+export const seedSuperAdmin = async () => {
+  const isExistSuperAdmin = await prisma.user.findFirst({
     where: {
-      role: UserRole.OWNER,
+      role: UserRole.SUPER_ADMIN,
     },
   });
 
-  if (isExistOwner) return;
+  if (isExistSuperAdmin) return;
 
   const hashedPassword = await bcrypt.hash(
-    config.owner_default_pass,
+    config.super_admin_default_pass,
     Number(config.salt_rounds)
   );
 
   await prisma.user.create({
     data: {
-      ...owner,
+      ...superAdmin,
       password: hashedPassword,
     },
   });
