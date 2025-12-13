@@ -39,3 +39,19 @@ export function isTodayBetween(startDate: Date, endDate: Date): boolean {
   const today = new Date();
   return today >= startDate && today <= endDate;
 }
+
+// ----------------- Converts text to sentence case -------------------------
+export function toSentenceCase(text: string): string {
+  if (!text) return text;
+  
+  // Replace underscores with spaces and convert to lowercase
+  const normalized = text.replace(/_/g, ' ').toLowerCase();
+  
+  // Capitalize the first letter
+  return normalized.charAt(0).toUpperCase() + normalized.slice(1);
+}
+
+// ----------------- Message generator for enum -----------------------------
+export const enumMessageGenerator = (field: string, values: string[]): string => {
+  return `${field} must be ${values.slice(0, -1).join(", ") + " or " + values[values.length - 1]}`;
+}

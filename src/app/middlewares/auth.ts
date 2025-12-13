@@ -56,6 +56,29 @@ const auth = (...roles: string[]) => {
         );
       }
 
+      // Check company existence if user is not super admin
+      if (user.role !== "SUPER_ADMIN") {
+        if (user.company_id) { 
+          const company = await prisma.company.findUniqueOrThrow({
+            where: {
+              id: user.company_id,
+              status: "ACTIVE",
+            },
+          });
+          if (!company) {
+            throw new CustomizedError(
+              httpStatus.UNAUTHORIZED,
+              "Your company is not found"
+            );
+          }
+        } else {
+          throw new CustomizedError(
+            httpStatus.UNAUTHORIZED,
+            "You are not authorized"
+          );
+        }
+      }
+
       req.user = verifiedUser;
 
       next();

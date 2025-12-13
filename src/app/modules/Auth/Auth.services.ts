@@ -5,7 +5,7 @@ import { newPasswordTemplate } from "../../template/new-password-template";
 import sendEmail from "../../utils/email-sender";
 import { ResetPasswordPayload, TLogin, TRegister } from "./Auth.interfaces";
 import { prisma } from "../../shared/prisma";
-import { tokenGenerator, tokenVerifier } from "../../utils/jwt-helpers";
+import { payloadMaker, tokenGenerator, tokenVerifier } from "../../utils/jwt-helpers";
 import { passwordGenerator } from "../../utils/password-generator";
 import CustomizedError from "../../error/customized-error";
 import config from "../../config";
@@ -59,15 +59,7 @@ const login = async (credential: TLogin) => {
     );
   }
 
-  const jwtPayload = {
-    id: user.id,
-    name: user.name,
-    avatar: user.avatar,
-    contact_number: user.contact_number,
-    email: user.email,
-    role: user.role,
-    company_id: user.company_id,
-  };
+  const jwtPayload = payloadMaker(user);
 
   const accessToken = tokenGenerator(
     jwtPayload,
@@ -133,15 +125,7 @@ const getAccessToken = async (token: string) => {
     }
   }
 
-  const jwtPayload = {
-    id: user.id,
-    name: user.name,
-    avatar: user.avatar,
-    contact_number: user.contact_number,
-    email: user.email,
-    role: user.role,
-    company_id: user.company_id,
-  };
+  const jwtPayload = payloadMaker(user);
 
   const accessToken = tokenGenerator(
     jwtPayload,
@@ -210,15 +194,7 @@ const resetPassword = async (
     );
   }
 
-  const jwtPayload = {
-    id: result.id,
-    name: result.name,
-    avatar: result.avatar,
-    contact_number: result.contact_number,
-    email: result.email,
-    role: result.role,
-    company_id: result.company_id,
-  };
+  const jwtPayload = payloadMaker(result);
 
   const accessToken = tokenGenerator(
     jwtPayload,

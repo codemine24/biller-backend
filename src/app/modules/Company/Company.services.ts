@@ -15,6 +15,8 @@ import paginationMaker from "../../utils/pagination-maker";
 import { prisma } from "../../shared/prisma";
 import { Prisma } from "../../../../prisma/generated";
 import { TAuthUser } from "../../interfaces/common";
+import { payloadMaker, tokenGenerator } from "../../utils/jwt-helpers";
+import config from "../../config";
 
 // -------------------------------------- CREATE COMPANY -----------------------------------------
 const createCompany = async (data: CreateCompanyPayload, user: TAuthUser) => {
@@ -44,7 +46,35 @@ const createCompany = async (data: CreateCompanyPayload, user: TAuthUser) => {
     return company;
   });
 
-  return result;
+  const updatedUser = await prisma.user.findUnique({
+    where: {
+      id: user.id,
+    },
+  });
+
+  if(!updatedUser) {
+    throw new CustomizedError(httpStatus.NOT_FOUND, "User not found");
+  }
+
+  const jwtPayload = payloadMaker(updatedUser);
+  
+  const accessToken = tokenGenerator(
+    jwtPayload,
+    config.jwt_access_secret,
+    config.jwt_access_expiresin
+  );
+  
+  const refreshToken = tokenGenerator(
+    jwtPayload,
+    config.jwt_refresh_secret,
+    config.jwt_refresh_expiresin
+  );
+
+  return {
+    ...result,
+    accessToken,
+    refreshToken,
+  };
 };
 
 // -------------------------------------- GET COMPANIES -------------------------------------------
