@@ -13,10 +13,11 @@ import { validDateChecker } from "../../utils/checker";
 import queryValidator from "../../utils/query-validator";
 import paginationMaker from "../../utils/pagination-maker";
 import { prisma } from "../../shared/prisma";
-import { Prisma } from "../../../../prisma/generated";
+import { Prisma, Store } from "../../../../prisma/generated";
 
 // Helper function to generate unique invoice number
-const generateInvoiceNumber = async (): Promise<string> => {
+const generateInvoiceNumber = async (store: Store): Promise<string> => {
+  const storePrefix =  store.name.slice(0, 3).toUpperCase()
   const prefix = "PUR";
   const date = new Date();
   const year = date.getFullYear();
@@ -32,11 +33,12 @@ const generateInvoiceNumber = async (): Promise<string> => {
         gte: startOfDay,
         lte: endOfDay,
       },
+      store_id: store.id 
     },
   });
   
   const sequence = String(count + 1).padStart(4, "0");
-  return `${prefix}-${year}${month}-${sequence}`;
+  return `${prefix}-${storePrefix}-${year}${month}-${sequence}`;
 };
 
 // -------------------------------------- CREATE PURCHASE -----------------------------------
@@ -86,7 +88,9 @@ const createPurchase = async (data: CreatePurchasePayload, user: TAuthUser) => {
   }
 
   // Generate invoice number
-  const invoice_number = await generateInvoiceNumber();
+  const invoice_number = await generateInvoiceNumber(store);
+
+  console.log(invoice_number)
 
   // Calculate total_price for each item and total_amount
   const itemsWithTotal = data.items.map((item) => ({
