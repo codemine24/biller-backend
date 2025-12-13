@@ -54,10 +54,10 @@ const createCustomer = async (data: CreateCustomerPayload, user: TAuthUser) => {
 
 // -------------------------------------- GET CUSTOMERS -------------------------------------
 const getCustomers = async (user: TAuthUser, query: Record<string, any>) => {
-  if (!user?.company_id) {
+  if (!user.company_id) {
     throw new CustomizedError(httpStatus.NOT_FOUND, "Your company not found");
   }
-  
+
   const {
     search_term,
     page,
@@ -165,6 +165,9 @@ const getCustomer = async (id: string, company_id: string) => {
       id,
       company_id,
       is_active: true,
+    },
+    include: {
+      company: true,
     },
   });
 

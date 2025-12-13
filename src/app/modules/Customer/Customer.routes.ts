@@ -16,26 +16,26 @@ router.post(
 
 router.get(
   "/",
-  auth(UserRole.SUPER_ADMIN, UserRole.OWNER, UserRole.ADMIN, UserRole.BRANCH_MANAGER),
+  auth(UserRole.OWNER, UserRole.ADMIN, UserRole.BRANCH_MANAGER, UserRole.SALESMAN),
   CustomerControllers.getCustomers
 );
 
 router.get(
   "/:id",
-  auth(UserRole.SUPER_ADMIN, UserRole.OWNER, UserRole.ADMIN, UserRole.BRANCH_MANAGER),
+  auth(UserRole.OWNER, UserRole.ADMIN, UserRole.BRANCH_MANAGER, UserRole.SALESMAN),
   CustomerControllers.getCustomer
 );
 
 router.patch(
   "/:id",
-  auth(UserRole.SUPER_ADMIN, UserRole.OWNER, UserRole.ADMIN),
+  auth(UserRole.OWNER, UserRole.ADMIN, UserRole.BRANCH_MANAGER, UserRole.SALESMAN),
   payloadValidator(CustomerSchemas.updateCustomer),
   CustomerControllers.updateCustomer
 );
 
 router.delete(
   "/:id",
-  auth(UserRole.SUPER_ADMIN, UserRole.OWNER, UserRole.ADMIN),
+  auth(UserRole.OWNER, UserRole.ADMIN, UserRole.BRANCH_MANAGER, UserRole.SALESMAN),
   CustomerControllers.deleteCustomer
 );
 

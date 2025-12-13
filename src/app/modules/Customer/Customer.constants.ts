@@ -15,7 +15,6 @@ export const customerSearchableFields = [
   "name",
   "email",
   "contact_number",
-  "address",
 ];
 
 export const customerSortableFields = [
