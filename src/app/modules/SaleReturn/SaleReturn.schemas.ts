@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { ReturnStatus } from "../../../../prisma/generated";
+import { enumMessageGenerator } from "../../utils/helper";
 
 const saleReturnItemSchema = z.object({
   product_id: z.uuid({ message: "Product ID must be a valid UUID" }),
@@ -13,9 +15,9 @@ const createSaleReturn = z.object({
       store_id: z.uuid({ message: "Store ID must be a valid UUID" }),
       return_date: z.string().datetime({ message: "Return date must be a valid datetime" }).optional(),
       reason: z.string({message: "Reason is required"}).min(1, "Reason is required"),
-      status: z.enum(["PENDING", "APPROVED", "REJECTED", "COMPLETED"], {
-        message: "Status must be PENDING, APPROVED, REJECTED, or COMPLETED",
-      }).default("PENDING"),
+      status: z.enum(Object.values(ReturnStatus), {
+        message: enumMessageGenerator('status', Object.values(ReturnStatus)),
+      }).default(ReturnStatus.PENDING),
       notes: z.string().optional(),
       items: z.array(saleReturnItemSchema, {
         message: "Items must be an array and is required",
@@ -32,8 +34,8 @@ const updateSaleReturn = z.object({
       return_date: z.string().datetime({ message: "Return date must be a valid datetime" }).optional(),
       reason: z.string({message: "Reason is required"}).min(1, "Reason is required").optional(),
       refund_amount: z.number().nonnegative({ message: "Refund amount must be non-negative" }).optional(),
-      status: z.enum(["PENDING", "APPROVED", "REJECTED", "COMPLETED"], {
-        message: "Status must be PENDING, APPROVED, REJECTED, or COMPLETED",
+      status: z.enum(Object.values(ReturnStatus), {
+        message: enumMessageGenerator('status', Object.values(ReturnStatus)),
       }).optional(),
       notes: z.string().optional(),
       items: z.array(saleReturnItemSchema).optional(),

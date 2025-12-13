@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { PurchaseStatus } from "../../../../prisma/generated";
+import { enumMessageGenerator } from "../../utils/helper";
 
 const purchaseItemSchema = z.object({
   product_id: z.uuid({ message: "Product ID must be a valid UUID" }),
@@ -13,9 +15,9 @@ const createPurchase = z.object({
       store_id: z.uuid({ message: "Store ID must be a valid UUID" }),
       purchase_date: z.string().datetime({ message: "Purchase date must be a valid datetime" }).optional(),
       paid_amount: z.number().nonnegative({ message: "Paid amount must be non-negative" }).optional(),
-      status: z.enum(["PENDING", "COMPLETED", "CANCELLED"], {
-        message: "Status must be PENDING, COMPLETED, or CANCELLED",
-      }).default("PENDING"),
+      status: z.enum(Object.values(PurchaseStatus), {
+        message: enumMessageGenerator('status', Object.values(PurchaseStatus)),
+      }).default(PurchaseStatus.PENDING),
       notes: z.string().optional(),
       items: z.array(purchaseItemSchema, {
         message: "Items must be an array and is required",
@@ -33,8 +35,8 @@ const updatePurchase = z.object({
       total_amount: z.number().nonnegative({ message: "Total amount must be non-negative" }).optional(),
       paid_amount: z.number().nonnegative({ message: "Paid amount must be non-negative" }).optional(),
       due_amount: z.number().nonnegative({ message: "Due amount must be non-negative" }).optional(),
-      status: z.enum(["PENDING", "COMPLETED", "CANCELLED"], {
-        message: "Status must be PENDING, COMPLETED, or CANCELLED",
+      status: z.enum(Object.values(PurchaseStatus), {
+        message: enumMessageGenerator('status', Object.values(PurchaseStatus)),
       }).optional(),
       notes: z.string().optional(),
       items: z.array(purchaseItemSchema).optional(),

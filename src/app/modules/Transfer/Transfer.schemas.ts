@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { TransferStatus } from "../../../../prisma/generated";
+import { enumMessageGenerator } from "../../utils/helper";
 
 const transferItemSchema = z.object({
   product_id: z.uuid({ message: "Product ID must be a valid UUID" }),
@@ -11,9 +13,9 @@ const createTransfer = z.object({
       from_store_id: z.uuid({ message: "From store ID must be a valid UUID" }),
       to_store_id: z.uuid({ message: "To store ID must be a valid UUID" }),
       transfer_date: z.string().datetime({ message: "Transfer date must be a valid datetime" }).optional(),
-      status: z.enum(["PENDING", "IN_TRANSIT", "COMPLETED", "CANCELLED"], {
-        message: "Status must be PENDING, IN_TRANSIT, COMPLETED, or CANCELLED",
-      }).default("PENDING"),
+      status: z.enum(Object.values(TransferStatus), {
+        message: enumMessageGenerator('status', Object.values(TransferStatus)),
+      }).default(TransferStatus.PENDING),
       notes: z.string().optional(),
       items: z.array(transferItemSchema, {
         message: "Items must be an array and is required",
@@ -32,8 +34,8 @@ const updateTransfer = z.object({
       from_store_id: z.uuid({ message: "From store ID must be a valid UUID" }).optional(),
       to_store_id: z.uuid({ message: "To store ID must be a valid UUID" }).optional(),
       transfer_date: z.string().datetime({ message: "Transfer date must be a valid datetime" }).optional(),
-      status: z.enum(["PENDING", "IN_TRANSIT", "COMPLETED", "CANCELLED"], {
-        message: "Status must be PENDING, IN_TRANSIT, COMPLETED, or CANCELLED",
+      status: z.enum(Object.values(TransferStatus), {
+        message: enumMessageGenerator('status', Object.values(TransferStatus)),
       }).optional(),
       notes: z.string().optional(),
       items: z.array(transferItemSchema).optional(),
