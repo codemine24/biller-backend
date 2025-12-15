@@ -160,10 +160,9 @@ model Inventory {
 }
 
 // ==================== Purchase Management ====================
-
 model Purchase {
   id             String         @id @default(uuid())
-  invoice_number String         @unique
+  invoice_number String
   vendor_id      String
   store_id       String
   purchase_date  DateTime       @default(now())

@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { SaleStatus } from "../../../../prisma/generated";
+import { enumMessageGenerator } from "../../utils/helper";
 
 const saleItemSchema = z.object({
   product_id: z.uuid({ message: "Product ID must be a valid UUID" }),
@@ -15,9 +17,9 @@ const createSale = z.object({
       discount: z.number({message: "Discount must be a number"}).nonnegative({ message: "Discount must be non-negative" }).default(0),
       tax: z.number({message: "Tax must be a number"}).nonnegative({ message: "Tax must be non-negative" }).default(0),
       paid_amount: z.number({message: "Paid amount must be a number"}).nonnegative({ message: "Paid amount must be non-negative" }).optional(),
-      status: z.enum(["COMPLETED", "CANCELLED", "RETURNED"], {
-        message: "Status must be COMPLETED, CANCELLED, or RETURNED",
-      }).default("COMPLETED"),
+      status: z.enum(Object.values(SaleStatus), {
+        message: enumMessageGenerator('status', Object.values(SaleStatus)),
+      }).default(SaleStatus.COMPLETED),
       notes: z.string().optional(),
       items: z.array(saleItemSchema, {
         message: "Items must be an array and is required",
@@ -38,8 +40,8 @@ const updateSale = z.object({
       total_amount: z.number().nonnegative({ message: "Total amount must be non-negative" }).optional(),
       paid_amount: z.number().nonnegative({ message: "Paid amount must be non-negative" }).optional(),
       due_amount: z.number().nonnegative({ message: "Due amount must be non-negative" }).optional(),
-      status: z.enum(["COMPLETED", "CANCELLED", "RETURNED"], {
-        message: "Status must be COMPLETED, CANCELLED, or RETURNED",
+      status: z.enum(Object.values(SaleStatus), {
+        message: enumMessageGenerator('status', Object.values(SaleStatus)),
       }).optional(),
       notes: z.string().optional(),
       items: z.array(saleItemSchema).optional(),
