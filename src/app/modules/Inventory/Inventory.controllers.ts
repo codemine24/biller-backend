@@ -160,12 +160,92 @@ const deleteInventory = catchAsync(
   }
 );
 
+// -------------------------------------- GET STORE WISE PRODUCTS -------------------------------
+const getStoreWiseProducts = catchAsync(
+  async (req: Request & { user?: TAuthUser }, res, next) => {
+    const filteredQuery = pick(req.query, [
+      "page",
+      "limit",
+      "sort_by",
+      "sort_order",
+      "store_id",
+      "search_term",
+    ]);
+    const result = await InventoryServices.getStoreWiseProducts(
+      req.user as TAuthUser,
+      filteredQuery
+    );
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Store-wise products retrieved successfully",
+      meta: result.meta,
+      data: result.data,
+    });
+  }
+);
+
+// -------------------------------------- GET BRAND WISE PRODUCTS -------------------------------
+const getBrandWiseProducts = catchAsync(
+  async (req: Request & { user?: TAuthUser }, res, next) => {
+    const filteredQuery = pick(req.query, [
+      "page",
+      "limit",
+      "sort_by",
+      "sort_order",
+      "brand_id",
+      "search_term",
+      "store_id",
+    ]);
+    const result = await InventoryServices.getBrandWiseProducts(
+      req.user as TAuthUser,
+      filteredQuery
+    );
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Brand-wise products retrieved successfully",
+      meta: result.meta,
+      data: result.data,
+    });
+  }
+);
+
+// -------------------------------------- GET CATEGORY WISE PRODUCTS ----------------------------
+const getCategoryWiseProducts = catchAsync(
+  async (req: Request & { user?: TAuthUser }, res, next) => {
+    const filteredQuery = pick(req.query, [
+      "page",
+      "limit",
+      "sort_by",
+      "sort_order",
+      "category_id",
+      "search_term",
+      "store_id",
+    ]);
+    const result = await InventoryServices.getCategoryWiseProducts(
+      req.user as TAuthUser,
+      filteredQuery
+    );
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Category-wise products retrieved successfully",
+      meta: result.meta,
+      data: result.data,
+    });
+  }
+);
+
 export const InventoryControllers = {
   getInventory,
   getInventoryById,
   getInventoryByStore,
   getInventoryByProduct,
   getLowStockItems,
+  getStoreWiseProducts,
+  getBrandWiseProducts,
+  getCategoryWiseProducts,
   createInventory,
   updateInventory,
   adjustInventory,

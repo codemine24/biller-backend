@@ -18,10 +18,7 @@ import { slugGenerator } from "../../utils/slug-generator";
 
 // -------------------------------------- CREATE PRODUCT -----------------------------------
 const createProduct = async (data: CreateProductPayload, user: TAuthUser) => {
-  if (user.role !== UserRole.SUPER_ADMIN && !user?.company_id) {
-    throw new CustomizedError(httpStatus.NOT_FOUND, "Your company not found");
-  }
-
+  console.log(data);
   // Generate slug from name if not provided
   const slug = data.slug || slugGenerator(data.name);
 
@@ -40,33 +37,32 @@ const createProduct = async (data: CreateProductPayload, user: TAuthUser) => {
     );
   }
 
-  // Check for duplicate slug within the same company
-  const existingProductBySlug = await prisma.product.findFirst({
-    where: {
-      slug: slug,
-      ...(user.company_id && {company_id: user.company_id})
-    },
-  });
-
-  if (existingProductBySlug) {
-    throw new CustomizedError(
-      httpStatus.CONFLICT,
-      "Product with this slug already exists"
-    );
-  }
-
   // Validate category if provided
   if (data.category_id) {
-    await prisma.category.findUniqueOrThrow({
+    const category = await prisma.category.findFirst({
       where: { id: data.category_id, ...(user.company_id && {company_id: user.company_id}) },
     });
+
+    if (!category) {
+      throw new CustomizedError(
+        httpStatus.NOT_FOUND,
+        "Category ID is invalid"
+      );
+    }
   }
 
   // Validate brand if provided
   if (data.brand_id) {
-    await prisma.brand.findUniqueOrThrow({
+    const brand = await prisma.brand.findFirst({
       where: { id: data.brand_id, ...(user.company_id && {company_id: user.company_id}) },
     });
+
+    if (!brand) {
+      throw new CustomizedError(
+        httpStatus.NOT_FOUND,
+        "Brand ID is invalid"
+      );
+    }
   }
 
   // Create product
