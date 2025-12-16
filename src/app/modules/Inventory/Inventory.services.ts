@@ -610,12 +610,490 @@ const deleteInventory = async (id: string, company_id: string) => {
   return { message: "Inventory record deleted successfully" };
 };
 
+// -------------------------------------- GET STORE WISE PRODUCTS -------------------------------
+const getStoreWiseProducts = async (
+  user: TAuthUser,
+  query: Record<string, any>
+) => {
+  if (!user.company_id) {
+    throw new CustomizedError(httpStatus.NOT_FOUND, "Your company not found");
+  }
+
+  const { page, limit, sort_by, sort_order, store_id, search_term } = query;
+
+  const { pageNumber, limitNumber, skip, sortWith, sortSequence } =
+    paginationMaker({
+      page,
+      limit,
+      sort_by: sort_by || "name",
+      sort_order,
+    });
+
+  // Build where conditions for stores
+  const storeWhereConditions: Prisma.StoreWhereInput = {
+    company_id: user.company_id,
+    is_active: true,
+  };
+
+  if (store_id) {
+    storeWhereConditions.id = store_id;
+  }
+
+  // Build where conditions for inventory/products
+  const inventoryWhereConditions: Prisma.InventoryWhereInput = {};
+
+  if (search_term) {
+    inventoryWhereConditions.product = {
+      name: {
+        contains: search_term.trim(),
+        mode: "insensitive",
+      },
+    };
+  }
+
+  // Get stores with their inventory
+  const [stores, total] = await Promise.all([
+    prisma.store.findMany({
+      where: storeWhereConditions,
+      skip: skip,
+      take: limitNumber,
+      orderBy: {
+        [sortWith]: sortSequence,
+      },
+      include: {
+        inventory: {
+          where: inventoryWhereConditions,
+          include: {
+            product: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+                description: true,
+                unit: true,
+                cost_price: true,
+                selling_price: true,
+                reorder_level: true,
+                is_active: true,
+                category: {
+                  select: {
+                    id: true,
+                    name: true,
+                    slug: true,
+                  },
+                },
+                brand: {
+                  select: {
+                    id: true,
+                    name: true,
+                    slug: true,
+                    logo: true,
+                  },
+                },
+              },
+            },
+          },
+          orderBy: {
+            product: {
+              name: "asc",
+            },
+          },
+        },
+      },
+    }),
+    prisma.store.count({
+      where: storeWhereConditions,
+    }),
+  ]);
+
+  // Transform the data to include stock status
+  const storesWithProducts = stores.map((store) => ({
+    id: store.id,
+    name: store.name,
+    address: store.address,
+    contact_number: store.contact_number,
+    is_active: store.is_active,
+    products: store.inventory.map((inv) => ({
+      inventory_id: inv.id,
+      product_id: inv.product.id,
+      product_name: inv.product.name,
+      product_slug: inv.product.slug,
+      description: inv.product.description,
+      unit: inv.product.unit,
+      cost_price: inv.product.cost_price,
+      selling_price: inv.product.selling_price,
+      reorder_level: inv.product.reorder_level,
+      current_stock: inv.quantity,
+      stock_status:
+        inv.quantity === 0
+          ? "OUT_OF_STOCK"
+          : inv.quantity <= inv.product.reorder_level
+          ? "LOW_STOCK"
+          : "IN_STOCK",
+      is_active: inv.product.is_active,
+      category: inv.product.category,
+      brand: inv.product.brand,
+      last_updated: inv.last_updated,
+    })),
+    total_products: store.inventory.length,
+    total_stock_value: store.inventory.reduce(
+      (sum, inv) => sum + Number(inv.product.cost_price) * inv.quantity,
+      0
+    ),
+  }));
+
+  return {
+    meta: {
+      page: pageNumber,
+      limit: limitNumber,
+      total,
+    },
+    data: storesWithProducts,
+  };
+};
+
+// -------------------------------------- GET BRAND WISE PRODUCTS -------------------------------
+const getBrandWiseProducts = async (
+  user: TAuthUser,
+  query: Record<string, any>
+) => {
+  if (!user.company_id) {
+    throw new CustomizedError(httpStatus.NOT_FOUND, "Your company not found");
+  }
+
+  const { page, limit, sort_by, sort_order, brand_id, search_term, store_id } = query;
+
+  const { pageNumber, limitNumber, skip, sortWith, sortSequence } =
+    paginationMaker({
+      page,
+      limit,
+      sort_by: sort_by || "name",
+      sort_order,
+    });
+
+  // Build where conditions for brands
+  const brandWhereConditions: Prisma.BrandWhereInput = {
+    company_id: user.company_id,
+  };
+
+  if (brand_id) {
+    brandWhereConditions.id = brand_id;
+  }
+
+  // Build where conditions for products
+  const productWhereConditions: Prisma.ProductWhereInput = {
+    company_id: user.company_id,
+    is_active: true,
+  };
+
+  if (search_term) {
+    productWhereConditions.name = {
+      contains: search_term.trim(),
+      mode: "insensitive",
+    };
+  }
+
+  // Build where conditions for inventory
+  const inventoryWhereConditions: Prisma.InventoryWhereInput = {};
+
+  if (store_id) {
+    inventoryWhereConditions.store_id = store_id;
+  }
+
+  // Get brands with their products and inventory
+  const [brands, total] = await Promise.all([
+    prisma.brand.findMany({
+      where: brandWhereConditions,
+      skip: skip,
+      take: limitNumber,
+      orderBy: {
+        [sortWith]: sortSequence,
+      },
+      include: {
+        products: {
+          where: productWhereConditions,
+          include: {
+            category: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+              },
+            },
+            inventory: {
+              where: inventoryWhereConditions,
+              include: {
+                store: {
+                  select: {
+                    id: true,
+                    name: true,
+                    address: true,
+                  },
+                },
+              },
+            },
+          },
+          orderBy: {
+            name: "asc",
+          },
+        },
+      },
+    }),
+    prisma.brand.count({
+      where: brandWhereConditions,
+    }),
+  ]);
+
+  // Transform the data to include stock status and aggregations
+  const brandsWithProducts = brands.map((brand) => {
+    const products = brand.products.map((product) => {
+      // Calculate total stock across all stores
+      const totalStock = product.inventory.reduce(
+        (sum, inv) => sum + inv.quantity,
+        0
+      );
+
+      // Determine overall stock status
+      const stockStatus =
+        totalStock === 0
+          ? "OUT_OF_STOCK"
+          : totalStock <= product.reorder_level
+          ? "LOW_STOCK"
+          : "IN_STOCK";
+
+      return {
+        product_id: product.id,
+        product_name: product.name,
+        product_slug: product.slug,
+        description: product.description,
+        unit: product.unit,
+        cost_price: product.cost_price,
+        selling_price: product.selling_price,
+        reorder_level: product.reorder_level,
+        total_stock: totalStock,
+        stock_status: stockStatus,
+        is_active: product.is_active,
+        category: product.category,
+        store_inventory: product.inventory.map((inv) => ({
+          inventory_id: inv.id,
+          store: inv.store,
+          quantity: inv.quantity,
+          last_updated: inv.last_updated,
+        })),
+      };
+    });
+
+    // Calculate brand-level aggregations
+    const totalProducts = products.length;
+    const totalStockValue = products.reduce(
+      (sum, product) =>
+        sum + Number(product.cost_price) * product.total_stock,
+      0
+    );
+    const totalStockQuantity = products.reduce(
+      (sum, product) => sum + product.total_stock,
+      0
+    );
+
+    return {
+      id: brand.id,
+      name: brand.name,
+      slug: brand.slug,
+      logo: brand.logo,
+      description: brand.description,
+      total_products: totalProducts,
+      total_stock_quantity: totalStockQuantity,
+      total_stock_value: totalStockValue,
+      products: products,
+    };
+  });
+
+  return {
+    meta: {
+      page: pageNumber,
+      limit: limitNumber,
+      total,
+    },
+    data: brandsWithProducts,
+  };
+};
+
+// -------------------------------------- GET CATEGORY WISE PRODUCTS ----------------------------
+const getCategoryWiseProducts = async (
+  user: TAuthUser,
+  query: Record<string, any>
+) => {
+  if (!user.company_id) {
+    throw new CustomizedError(httpStatus.NOT_FOUND, "Your company not found");
+  }
+
+  const { page, limit, sort_by, sort_order, category_id, search_term, store_id } = query;
+
+  const { pageNumber, limitNumber, skip, sortWith, sortSequence } =
+    paginationMaker({
+      page,
+      limit,
+      sort_by: sort_by || "name",
+      sort_order,
+    });
+
+  // Build where conditions for categories
+  const categoryWhereConditions: Prisma.CategoryWhereInput = {
+    company_id: user.company_id,
+  };
+
+  if (category_id) {
+    categoryWhereConditions.id = category_id;
+  }
+
+  // Build where conditions for products
+  const productWhereConditions: Prisma.ProductWhereInput = {
+    company_id: user.company_id,
+    is_active: true,
+  };
+
+  if (search_term) {
+    productWhereConditions.name = {
+      contains: search_term.trim(),
+      mode: "insensitive",
+    };
+  }
+
+  // Build where conditions for inventory
+  const inventoryWhereConditions: Prisma.InventoryWhereInput = {};
+
+  if (store_id) {
+    inventoryWhereConditions.store_id = store_id;
+  }
+
+  // Get categories with their products and inventory
+  const [categories, total] = await Promise.all([
+    prisma.category.findMany({
+      where: categoryWhereConditions,
+      skip: skip,
+      take: limitNumber,
+      orderBy: {
+        [sortWith]: sortSequence,
+      },
+      include: {
+        products: {
+          where: productWhereConditions,
+          include: {
+            brand: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+                logo: true,
+              },
+            },
+            inventory: {
+              where: inventoryWhereConditions,
+              include: {
+                store: {
+                  select: {
+                    id: true,
+                    name: true,
+                    address: true,
+                  },
+                },
+              },
+            },
+          },
+          orderBy: {
+            name: "asc",
+          },
+        },
+      },
+    }),
+    prisma.category.count({
+      where: categoryWhereConditions,
+    }),
+  ]);
+
+  // Transform the data to include stock status and aggregations
+  const categoriesWithProducts = categories.map((category) => {
+    const products = category.products.map((product) => {
+      // Calculate total stock across all stores
+      const totalStock = product.inventory.reduce(
+        (sum, inv) => sum + inv.quantity,
+        0
+      );
+
+      // Determine overall stock status
+      const stockStatus =
+        totalStock === 0
+          ? "OUT_OF_STOCK"
+          : totalStock <= product.reorder_level
+          ? "LOW_STOCK"
+          : "IN_STOCK";
+
+      return {
+        product_id: product.id,
+        product_name: product.name,
+        product_slug: product.slug,
+        description: product.description,
+        unit: product.unit,
+        cost_price: product.cost_price,
+        selling_price: product.selling_price,
+        reorder_level: product.reorder_level,
+        total_stock: totalStock,
+        stock_status: stockStatus,
+        is_active: product.is_active,
+        brand: product.brand,
+        store_inventory: product.inventory.map((inv) => ({
+          inventory_id: inv.id,
+          store: inv.store,
+          quantity: inv.quantity,
+          last_updated: inv.last_updated,
+        })),
+      };
+    });
+
+    // Calculate category-level aggregations
+    const totalProducts = products.length;
+    const totalStockValue = products.reduce(
+      (sum, product) =>
+        sum + Number(product.cost_price) * product.total_stock,
+      0
+    );
+    const totalStockQuantity = products.reduce(
+      (sum, product) => sum + product.total_stock,
+      0
+    );
+
+    return {
+      id: category.id,
+      name: category.name,
+      slug: category.slug,
+      icon: category.icon,
+      description: category.description,
+      total_products: totalProducts,
+      total_stock_quantity: totalStockQuantity,
+      total_stock_value: totalStockValue,
+      products: products,
+    };
+  });
+
+  return {
+    meta: {
+      page: pageNumber,
+      limit: limitNumber,
+      total,
+    },
+    data: categoriesWithProducts,
+  };
+};
+
 export const InventoryServices = {
   getInventory,
   getInventoryById,
   getInventoryByStore,
   getInventoryByProduct,
   getLowStockItems,
+  getStoreWiseProducts,
+  getBrandWiseProducts,
+  getCategoryWiseProducts,
   createInventory,
   updateInventory,
   adjustInventory,

@@ -14,6 +14,27 @@ router.get(
   InventoryControllers.getLowStockItems
 );
 
+// Get store-wise products with stock information
+router.get(
+  "/store-wise-products",
+  auth(UserRole.OWNER, UserRole.ADMIN, UserRole.BRANCH_MANAGER, UserRole.SALESMAN),
+  InventoryControllers.getStoreWiseProducts
+);
+
+// Get brand-wise products with stock information
+router.get(
+  "/brand-wise-products",
+  auth(UserRole.OWNER, UserRole.ADMIN, UserRole.BRANCH_MANAGER, UserRole.SALESMAN),
+  InventoryControllers.getBrandWiseProducts
+);
+
+// Get category-wise products with stock information
+router.get(
+  "/category-wise-products",
+  auth(UserRole.OWNER, UserRole.ADMIN, UserRole.BRANCH_MANAGER, UserRole.SALESMAN),
+  InventoryControllers.getCategoryWiseProducts
+);
+
 // Get inventory by store
 router.get(
   "/store/:storeId",
