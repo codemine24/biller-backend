@@ -12,7 +12,7 @@ const createVendor = z.object({
           message: "Name is required",
         })
         .min(1, "Name cannot be empty"),
-      email: z.email({ message: "Email is invalid" }).optional(),
+      email: z.string().email({ message: "Email is invalid" }).optional(),
       contact_number: z.string({ message: "Contact number is required" }).regex(contactNumberRegex, {
         message: `Contact number should be a valid Bangladeshi number like ${contactNumberExample}`,
       }),
@@ -25,7 +25,7 @@ const updateVendor = z.object({
   body: z
     .object({
       name: z.string().min(1, "Name cannot be empty").optional(),
-      email: z.email({ message: "Email is invalid" }).optional(),
+      email: z.string().email({ message: "Email is invalid" }).optional(),
       contact_number: z.string().regex(contactNumberRegex, {
         message: `Contact number should be a valid Bangladeshi number like ${contactNumberExample}`,
       }).optional(),
